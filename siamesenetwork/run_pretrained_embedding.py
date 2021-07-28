@@ -14,7 +14,6 @@ import os
 import random
 from datetime import datetime
 
-import boto3
 import fasttext.util
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,11 +26,8 @@ from tqdm import tqdm
 
 from siamesePreTrainedEmbeddings import SiamesePreTrainedQuadruplet
 from siameseUtils import AverageMeter, QuadrupletLoss, libel2vec, computeModelTopk, lib2vocab, \
-    CreateTorchQuadrupletDataset, vocabtoidx
-
-with open('./config.yml', 'r') as stream:
-    config = yaml.safe_load(stream)
-s3 = boto3.client("s3", endpoint_url=config['s3url'])
+    CreateTorchQuadrupletDataset, vocabtoidx, multipleNWayOneShotTask
+from siamesenetwork.utils import *
 
 
 # -----------------
@@ -84,7 +80,7 @@ def train(model, trainDataGenerator, devDataGenerator, output_path, device, n_ep
             best_dev_loss = loss_meter.avg
             print("New best dev loss! Saving the model.")
             torch.save(model.state_dict(), output_path)
-            s3.upload_file(output_path, config['bucket'], 'siamese/' + output_path)
+            # s3.upload_file(output_path, config['bucket'], 'siamese/' + output_path)
         print("")
     return train_loss_history, dev_loss_history
 
@@ -135,22 +131,28 @@ def voc2idx(voc):
     return voc_dic
 
 
-if __name__ == "__main__":
+def main(argv):
     print('\nThis is a script for training a siamese network using fastText embeddings with a Quadruplet Loss.\n')
 
     print(80 * "=")
     print("LOADING CONFIG")
     print(80 * "=")
 
-    config_file = 'config.yml'
+    config_file = parse_config_file_path(argv)
     with open(config_file, 'r') as stream:
         config = yaml.safe_load(stream)
-
+    s3_client = get_s3_boto_client(config['s3url'])
+    # hyper parameter to be logged:
+    # - batch_size
+    # - n_epochs
+    # - lr: learning_rate
     batch_size = config['batch_size']
     n_epochs = config['n_epochs']
     dim = config['dim']
     lr = config['lr']
     lr = float(lr)
+
+    # layers don't need to train
     freeze_layers = config['freeze_layers']
 
     print(f'Dimension of the embedding space : {dim}')
@@ -165,16 +167,16 @@ if __name__ == "__main__":
     else:
         device = 'cpu'
 
-    # device = 'cpu'
 
     print(80 * "=")
     print("LOADING PRE-TRAINED EMBEDDINGS")
     print(80 * "=")
 
     ft = fasttext.load_model('models_pretrained/coicop/model_compressed.ftz')
-
+    # todo rewrite vocab
     s3.download_file(config['bucket'], config['vocab'], 'vocab.txt')
     voc_dic = vocabtoidx(vocab="vocab.txt")
+
 
     # CHARGEMENT DES EMBEDDINGS
     matrix_len = len(voc_dic) + 1
@@ -293,3 +295,7 @@ if __name__ == "__main__":
         with open(output_dir + 'performance.txt', 'a') as f:
             for i, item in enumerate(gotItPercentage):
                 f.write('Average Test Accuracy for {}-way task : {:.2f}\n'.format(i + 2, item))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
