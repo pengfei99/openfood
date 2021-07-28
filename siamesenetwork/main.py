@@ -1,6 +1,8 @@
+import getopt
 import math
 import os
 import random
+import sys
 import zipfile
 
 import boto3
@@ -8,13 +10,13 @@ import pandas as pd
 import yaml
 
 
-def get_s3_boto_client(config: dict):
-    return boto3.client("s3", endpoint_url=config['s3url'])
+def get_s3_boto_client(s3_url: str) -> boto3.client:
+    return boto3.client("s3", endpoint_url=s3_url)
 
 
-def download_data_from_s3(s3_client: boto3.client, config: dict, root_path: str):
-    data_path = f"{root_path}/data_siamese.csv"
-    s3_client.download_file(config['bucket'], config['dataKey'], data_path)
+def download_data_from_s3(s3_client: boto3.client, bucket_name: str, s3_data_path: str, local_root_path: str):
+    data_path = f"{local_root_path}/data_siamese.csv"
+    s3_client.download_file(bucket_name, s3_data_path, data_path)
 
 
 def split_data(seed: int, root_path: str):
@@ -71,16 +73,42 @@ def download_vocabulary(s3_client, config: dict, root_path: str):
     s3_client.download_file(config['bucket'], config['vocab'], vocab_path)
 
 
-def main():
+def parse_config_file_path(argv) -> str:
+    config_file = ''
+    hint = "main.py -c <config_file>"
+    try:
+        # hc: is the short option definitions. For example, you can test.py -c or test.py -h
+        # [cfile,help] for long option definitions. For example, you can do test.py --cfile or test.py --help
+        opts, args = getopt.getopt(argv, "hc:", ["cfile=", "help="])
+    except getopt.GetoptError:
+        raise SystemExit(f"invalide arguments \nhint: {hint}")
+    for opt, arg in opts:
+        # option h for help
+        if opt in ('-h', "--help"):
+            print("hint")
+            sys.exit()
+        # option for config file
+        elif opt in ("-c", "--cfile"):
+            config_file = arg
+        else:
+            print("unknown option.\n " + hint)
+    if not args or len(args) > 1:
+        raise SystemExit(f"invalide arguments \nhint: {hint}")
+    print(f'Config file path is {config_file}')
+    return config_file
+
+
+def main(argv):
     # setup config
+    config_file_path = parse_config_file_path(argv)
     seed = 5648783
     root_path = "/home/jovyan/work/openfood_data"
-    with open('./config.yml', 'r') as stream:
+    with open(config_file_path, 'r') as stream:
         config = yaml.safe_load(stream)
-    s3_client = get_s3_boto_client(config)
+    s3_client = get_s3_boto_client(config['s3url'])
 
     # Step1: download data from s3
-    download_data_from_s3(s3_client, config, root_path)
+    download_data_from_s3(s3_client, config['bucket'], config['dataKey'], root_path)
 
     # Step2: Split data to train, test, validation
     split_data(seed, root_path)
@@ -94,4 +122,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
