@@ -75,7 +75,7 @@ def download_vocabulary(s3_client, config: dict, root_path: str):
 def main():
     # setup config
     seed = 5648783
-    root_path = "/tmp"
+    root_path = "/home/jovyan/work/openfood_data"
     with open('./config.yml', 'r') as stream:
         config = yaml.safe_load(stream)
     s3_client = get_s3_boto_client(config)
