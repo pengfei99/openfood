@@ -37,11 +37,10 @@ def download_model_result_from_s3(s3_client, config, root_path):
     last_model_results_path = f"{root_path}/models_results/{config['lastModel']}"
     last_model_weights_path = f"{last_model_results_path}/model.weights"
 
-    if os.path.exists(model_results_path):
-        if not os.path.exists(last_model_results_path):
-            os.mkdir(last_model_results_path)
-    else:
-        os.mkdir(model_results_path)
+    if not os.path.exists(last_model_results_path):
+        if not os.path.exists(model_results_path):
+            os.mkdir(model_results_path)
+        os.mkdir(last_model_results_path)
     s3_client.download_file(config['bucket'], config['modelKey'] % config['lastModel'], last_model_weights_path)
 
 
