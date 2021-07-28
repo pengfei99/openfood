@@ -1,0 +1,25 @@
+# Config:        main parameters for the configuration of the model
+# @param dim (int): dimension of the output vector
+# @param length (int): number of token allowed for each libel (fixed size)
+# @param batch_size (int): size of training batch
+# @param n_epochs (int): number of epochs
+# @param lr (float): learning rate
+# @param freeze_layers (bool): if True, does not train pre-trained layers
+# @param bucket: s3 bucket
+# @param dataKey: s3 Key for dataset
+# @param s3url: endpoint url S3
+dim: 100
+length: 20
+batch_size: 32
+n_epochs: 50
+lr: 3e-4
+freeze_layers: True
+bucket: 'projet-relevanc'
+dataKey:  'siamese/libelsMatchEAN.csv'
+modelKey: 'siamese/models_results/%s/model.weights'
+fasttextmodelKey: 'fasttextmodels/%s'
+lastModel: '20210616_144409'
+pretrainedModel_COICOP: 'model_2020-11-17_0_DOM.zip'
+pretrainedModel_NA2008: 'model_2020-12-14_0.zip'
+s3url: 'https://minio.lab.sspcloud.fr'
+vocab: 'siamese/vocab.txt'
