@@ -27,7 +27,7 @@ from tqdm import tqdm
 from siamesePreTrainedEmbeddings import SiamesePreTrainedQuadruplet
 from siameseUtils import AverageMeter, QuadrupletLoss, libel2vec, computeModelTopk, lib2vocab, \
     CreateTorchQuadrupletDataset, vocabtoidx, multipleNWayOneShotTask
-from siamesenetwork.utils import *
+from utils import *
 
 
 # -----------------
@@ -137,11 +137,16 @@ def main(argv):
     print(80 * "=")
     print("LOADING CONFIG")
     print(80 * "=")
-
+    # get config file path
     config_file = parse_config_file_path(argv)
     with open(config_file, 'r') as stream:
         config = yaml.safe_load(stream)
+    # build s3 client
     s3_client = get_s3_boto_client(config['s3url'])
+    # get local data root path
+    root_path = config['data_root_path']
+
+    #
     # hyper parameter to be logged:
     # - batch_size
     # - n_epochs
@@ -167,16 +172,16 @@ def main(argv):
     else:
         device = 'cpu'
 
-
     print(80 * "=")
     print("LOADING PRE-TRAINED EMBEDDINGS")
     print(80 * "=")
 
-    ft = fasttext.load_model('models_pretrained/coicop/model_compressed.ftz')
+    # load fasttext model
+    ft_model_path = f"{root_path}/models_pretrained/coicop/model_compressed.ftz"
+    ft = fasttext.load_model(ft_model_path)
     # todo rewrite vocab
-    s3.download_file(config['bucket'], config['vocab'], 'vocab.txt')
+    s3_client.download_file(config['bucket'], config['vocab'], 'vocab.txt')
     voc_dic = vocabtoidx(vocab="vocab.txt")
-
 
     # CHARGEMENT DES EMBEDDINGS
     matrix_len = len(voc_dic) + 1
@@ -197,15 +202,18 @@ def main(argv):
     print(80 * "=")
     print("LOADING AND PRE-PROCESSING TRAINING DATA")
     print(80 * "=")
-
-    libTrainData = CreateTorchQuadrupletDataset(voc_dic, 'train.csv', device=device)
+    # load training data
+    train_data_path = f"{root_path}/train.csv"
+    libTrainData = CreateTorchQuadrupletDataset(voc_dic, train_data_path, device=device)
     print(f'Train dataset : {len(libTrainData)} quadruplets of descriptions loaded. \n')
 
     print(80 * "=")
     print("LOADING AND PRE-PROCESSING DEV DATA")
     print(80 * "=")
 
-    libDevData = CreateTorchQuadrupletDataset(voc_dic, 'test.csv', device=device)
+    # load dev/validation data
+    dev_data_path = f"{root_path}/dev.csv"
+    libDevData = CreateTorchQuadrupletDataset(voc_dic, dev_data_path, device=device)
 
     print(f'Dev dataset : {len(libDevData)} quadruplets of descriptions loaded. \n')
 
@@ -227,7 +235,7 @@ def main(argv):
         siameseModel.load_state_dict(torch.load('models_results/20210616_152847/model.weights'))
 
     # output_path
-    output_dir = "models_results/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+    output_dir = "{}/models_results/{:%Y%m%d_%H%M%S}/".format(root_path, datetime.now())
     output_path = output_dir + "model.weights"
 
     if not os.path.exists(output_dir):
@@ -254,7 +262,9 @@ def main(argv):
         siameseModel.load_state_dict(torch.load(output_path))
         print('Testing the best model over training epochs.\n')
 
-    df = pd.read_csv('test.csv', nrows=2000)
+    # load test data
+    test_data_path = f"{root_path}/test.csv"
+    df = pd.read_csv(test_data_path, nrows=2000)
     list_libel = lib2vocab(df['libel_clean'].to_list(), voc_dic)
     list_libel_OFF = lib2vocab(df['libel_clean_OFF'].to_list(), voc_dic)
 
@@ -278,23 +288,23 @@ def main(argv):
         for i, item in enumerate(accuracy):
             f.write('Average Test Accuracy for top-{} : {:.2f}\n'.format(i + 1, item))
 
-    correction = False
-    if correction:
-        print(80 * "=")
-        print("TESTING THE MODEL USING N-WAY ONE SHOT TASKS")
-        print(80 * "=")
-
-        N_maxParam = 10
-
-        gotItPercentage = multipleNWayOneShotTask(vectors=watch_vectors, labels=family, N_max=N_maxParam, B=500)
-
-        plt.plot(np.arange(2, N_maxParam + 1), gotItPercentage, 'b')
-        plt.plot(np.arange(2, N_maxParam + 1), 1 / np.arange(2, N_maxParam + 1), 'r')
-        plt.show()
-
-        with open(output_dir + 'performance.txt', 'a') as f:
-            for i, item in enumerate(gotItPercentage):
-                f.write('Average Test Accuracy for {}-way task : {:.2f}\n'.format(i + 2, item))
+    # correction = False
+    # if correction:
+    #     print(80 * "=")
+    #     print("TESTING THE MODEL USING N-WAY ONE SHOT TASKS")
+    #     print(80 * "=")
+    #
+    #     N_maxParam = 10
+    #
+    #     gotItPercentage = multipleNWayOneShotTask(vectors=watch_vectors, labels=family, N_max=N_maxParam, B=500)
+    #
+    #     plt.plot(np.arange(2, N_maxParam + 1), gotItPercentage, 'b')
+    #     plt.plot(np.arange(2, N_maxParam + 1), 1 / np.arange(2, N_maxParam + 1), 'r')
+    #     plt.show()
+    #
+    #     with open(output_dir + 'performance.txt', 'a') as f:
+    #         for i, item in enumerate(gotItPercentage):
+    #             f.write('Average Test Accuracy for {}-way task : {:.2f}\n'.format(i + 2, item))
 
 
 if __name__ == "__main__":
