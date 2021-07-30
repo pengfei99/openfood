@@ -290,7 +290,9 @@ def main(argv):
         plt.show()
 
         # log model
+        scripted_pytorch_model = torch.jit.script(siamese_model)
         mlflow.pytorch.log_model(siamese_model, "model")
+        mlflow.pytorch.log_model(scripted_pytorch_model, "scripted_model")
         # step6: evaluate model by using test data set
         print(80 * "=")
         print("COMPUTING VECTORS FOR TEST SET")
