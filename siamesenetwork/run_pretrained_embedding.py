@@ -204,6 +204,13 @@ def build_train_dev_data_loader(train_data_path: str, dev_data_path: str, voc_di
     return train_data_loader, dev_data_loader
 
 
+def build_model(weights_matrix, dim, train_from_previous, previous_model_path=None):
+    siamese_model = SiamesePreTrainedQuadruplet(weights_matrix=weights_matrix, dim=dim, length=20)
+    if train_from_previous:
+        siamese_model.load_state_dict(torch.load(previous_model_path))
+    return siamese_model
+
+
 def main(argv):
     print('\nThis is a script for training a siamese network using fastText embeddings with a Quadruplet Loss.\n')
     # Step1: Get param from config file
@@ -241,20 +248,19 @@ def main(argv):
     print(80 * "=")
 
     # step4: build and init model
-    siameseModel = SiamesePreTrainedQuadruplet(weights_matrix=weights_matrix, dim=dim, length=20)
-
+    # if you set train_from_previous to true, you must provide a previous model path
     train_from_previous = False
-    if train_from_previous:
-        siameseModel.load_state_dict(torch.load('models_results/20210616_152847/model.weights'))
+    previous_model_path = f"{root_path}/models_results/20210616_152847/model.weights"
+    siamese_model = build_model(weights_matrix, dim, train_from_previous, previous_model_path=previous_model_path)
 
     # output_path
     output_dir = "{}/models_results/{:%Y%m%d_%H%M%S}/".format(root_path, datetime.now())
     output_path = output_dir + "model.weights"
-
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
     # step5: train the model
-    train_loss_history, dev_loss_history = train(model=siameseModel,
+    train_loss_history, dev_loss_history = train(model=siamese_model,
                                                  trainDataGenerator=train_data_loader,
                                                  devDataGenerator=dev_data_loader,
                                                  output_path=output_path,
@@ -273,7 +279,7 @@ def main(argv):
 
     testTheBest = True
     if testTheBest:
-        siameseModel.load_state_dict(torch.load(output_path))
+        siamese_model.load_state_dict(torch.load(output_path))
         print('Testing the best model over training epochs.\n')
 
     # load test data
@@ -285,8 +291,8 @@ def main(argv):
     list_libel = [torch.tensor([l]) for l in list_libel]
     list_libel_OFF = [torch.tensor([l]) for l in list_libel_OFF]
 
-    vec_libel, libel, idx_to_libel = libel2vec(siameseModel.to('cpu'), list_libel)
-    vec_OFF, libel_OFF, idx_to_libel_OFF = libel2vec(siameseModel.to('cpu'), list_libel_OFF)
+    vec_libel, libel, idx_to_libel = libel2vec(siamese_model.to('cpu'), list_libel)
+    vec_OFF, libel_OFF, idx_to_libel_OFF = libel2vec(siamese_model.to('cpu'), list_libel_OFF)
 
     print(80 * "=")
     print("COMPUTING MODEL'S TOP-K ACCURACY")
