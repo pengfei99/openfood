@@ -33,7 +33,7 @@ def parse_config_file_path(argv) -> str:
             config_file = arg
         else:
             print("unknown option.\n " + hint)
-    if len(args) > 1:
+    if (not opts) or len(args) > 1:
         raise SystemExit(f"invalide arguments \nhint: {hint}")
     print(f'Config file path is {config_file}')
     return config_file
