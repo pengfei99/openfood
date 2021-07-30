@@ -6,7 +6,7 @@ import zipfile
 import pandas as pd
 import yaml
 
-from siamesenetwork.utils import *
+from utils import *
 
 
 def split_data(seed: int, root_path: str):
