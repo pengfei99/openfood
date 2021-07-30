@@ -131,56 +131,37 @@ def voc2idx(voc):
     return voc_dic
 
 
-def main(argv):
-    print('\nThis is a script for training a siamese network using fastText embeddings with a Quadruplet Loss.\n')
-
+def get_params(config_file_path: str):
     print(80 * "=")
     print("LOADING CONFIG")
     print(80 * "=")
     # get config file path
-    config_file = parse_config_file_path(argv)
-    with open(config_file, 'r') as stream:
+    with open(config_file_path, 'r') as stream:
         config = yaml.safe_load(stream)
-    # get local data root path
+    # local data root path on worker
     root_path = config['data_root_path']
-
-    #
-    # hyper parameter to be logged:
-    # - batch_size
-    # - n_epochs
-    # - lr: learning_rate
     batch_size = config['batch_size']
     n_epochs = config['n_epochs']
     dim = config['dim']
-    lr = config['lr']
-    lr = float(lr)
-
-    # layers don't need to train
+    lr = float(config['lr'])
     freeze_layers = config['freeze_layers']
-
     print(f'Dimension of the embedding space : {dim}')
     if freeze_layers:
         print('Does not train pre-trained layers.')
     print(f'Batch size : {batch_size}')
     print(f'Learning rate : {lr} \n')
+    return root_path, batch_size, n_epochs, dim, lr, freeze_layers
 
-    if torch.cuda.is_available():
-        print('GPU available. Training on GPU')
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    else:
-        device = 'cpu'
 
+def build_word_embedding_layer(ft_model_path: str, voc_dic: dict):
     print(80 * "=")
     print("LOADING PRE-TRAINED EMBEDDINGS")
     print(80 * "=")
 
-    # load fasttext model
-    ft_model_path = f"{root_path}/models_pretrained/coicop/model_compressed.ftz"
+    # load fasttext model to convert french text to vector
+
     ft = fasttext.load_model(ft_model_path)
     # todo rewrite vocab and embedding
-    # get vocabulary
-    vocab_path = f"{root_path}/vocab.txt"
-    voc_dic = vocabtoidx(vocab=vocab_path)
 
     # CHARGEMENT DES EMBEDDINGS
     matrix_len = len(voc_dic) + 1
@@ -196,13 +177,15 @@ def main(argv):
 
     print(f'We have found {words_found} in our fastText Pretrained Model.')
     print(weights_matrix.shape)
-    weights_matrix = torch.FloatTensor(weights_matrix)
+    return torch.FloatTensor(weights_matrix)
 
+
+def build_train_dev_data_loader(train_data_path: str, dev_data_path: str, voc_dic: dict, device: str, batch_size: int):
     print(80 * "=")
     print("LOADING AND PRE-PROCESSING TRAINING DATA")
     print(80 * "=")
+
     # load training data
-    train_data_path = f"{root_path}/train.csv"
     libTrainData = CreateTorchQuadrupletDataset(voc_dic, train_data_path, device=device)
     print(f'Train dataset : {len(libTrainData)} quadruplets of descriptions loaded. \n')
 
@@ -211,22 +194,53 @@ def main(argv):
     print(80 * "=")
 
     # load dev/validation data
-    dev_data_path = f"{root_path}/dev.csv"
     libDevData = CreateTorchQuadrupletDataset(voc_dic, dev_data_path, device=device)
-
     print(f'Dev dataset : {len(libDevData)} quadruplets of descriptions loaded. \n')
+
+    # build dataloader
+    train_data_loader = DataLoader(libTrainData, shuffle=True, batch_size=batch_size)
+    dev_data_loader = DataLoader(libDevData, shuffle=True, batch_size=batch_size)
+
+    return train_data_loader, dev_data_loader
+
+
+def main(argv):
+    print('\nThis is a script for training a siamese network using fastText embeddings with a Quadruplet Loss.\n')
+    # Step1: Get param from config file
+    config_file = parse_config_file_path(argv)
+    # hyper parameter to be logged for each run:
+    # - batch_size
+    # - n_epochs
+    # - dim
+    # - lr: learning_rate
+
+    # other param:
+    # freeze_layers: layers don't need to be trained
+    # root_path: local root path for downloaded data on each worker
+    root_path, batch_size, n_epochs, dim, lr, freeze_layers = get_params(config_file)
+
+    device = select_hardware_for_training('gpu')
+
+    # step2 : load pretrained fasttext model and build a word embedding layer
+    # get fasttext embedding model path
+    ft_model_path = f"{root_path}/models_pretrained/coicop/model_compressed.ftz"
+    # get vocabulary local path
+    vocab_path = f"{root_path}/vocab.txt"
+    # build a mapping between word and an index, need to be rewrite
+    voc_dic = vocabtoidx(vocab=vocab_path)
+    weights_matrix = build_word_embedding_layer(ft_model_path, voc_dic)
+
+    # step3 : transfer data
+    train_data_path = f"{root_path}/train.csv"
+    dev_data_path = f"{root_path}/dev.csv"
+    train_data_loader, dev_data_loader = build_train_dev_data_loader(train_data_path, dev_data_path, voc_dic, device,
+                                                                     batch_size)
 
     print(80 * "=")
     print("TRAINING THE MODEL")
     print(80 * "=")
 
-    random.seed(12071990)
-
-    # load data
-    trainDataLoader = DataLoader(libTrainData, shuffle=True, batch_size=batch_size)
-    devDataLoader = DataLoader(libDevData, shuffle=True, batch_size=batch_size)
-
-    # init model
+    # step4: build and init model
     siameseModel = SiamesePreTrainedQuadruplet(weights_matrix=weights_matrix, dim=dim, length=20)
 
     train_from_previous = False
@@ -239,10 +253,10 @@ def main(argv):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
+    # step5: train the model
     train_loss_history, dev_loss_history = train(model=siameseModel,
-                                                 trainDataGenerator=trainDataLoader,
-                                                 devDataGenerator=devDataLoader,
+                                                 trainDataGenerator=train_data_loader,
+                                                 devDataGenerator=dev_data_loader,
                                                  output_path=output_path,
                                                  device=device,
                                                  n_epochs=n_epochs,
@@ -252,6 +266,7 @@ def main(argv):
     plt.plot(np.arange(1, len(dev_loss_history) + 1), dev_loss_history, 'r')
     plt.show()
 
+    # step6: evaluate model by using test data set
     print(80 * "=")
     print("COMPUTING VECTORS FOR TEST SET")
     print(80 * "=")

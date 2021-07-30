@@ -1,6 +1,6 @@
 import getopt
 import sys
-
+import torch
 import boto3
 
 
@@ -37,3 +37,18 @@ def parse_config_file_path(argv) -> str:
         raise SystemExit(f"invalide arguments \nhint: {hint}")
     print(f'Config file path is {config_file}')
     return config_file
+
+
+def select_hardware_for_training(device_name: str) -> str:
+    device_name = device_name.lower()
+    if device_name == 'cpu':
+        return 'cpu'
+    elif device_name == 'gpu':
+        if torch.cuda.is_available():
+            return 'cuda:0'
+        else:
+            print("GPU is unavailable on this worker")
+            return 'cpu'
+    else:
+        print("Unknown device name, choose cpu as default device")
+        return 'cpu'
