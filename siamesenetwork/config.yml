@@ -11,8 +11,8 @@
 dim: 100
 length: 20
 batch_size: 32
-n_epochs: 50
-lr: 3e-4
+n_epochs: 5
+lr: 5e-4
 freeze_layers: True
 bucket: 'projet-relevanc'
 dataKey:  'siamese/libelsMatchEAN.csv'
@@ -24,3 +24,4 @@ pretrainedModel_NA2008: 'model_2020-12-14_0.zip'
 s3url: 'https://minio.lab.sspcloud.fr'
 vocab: 'siamese/vocab.txt'
 data_root_path: "/home/jovyan/work/openfood_data"
+auto_log: False
