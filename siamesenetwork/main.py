@@ -59,9 +59,15 @@ def main(argv):
     # setup config
     config_file_path = parse_config_file_path(argv)
     seed = 5648783
-    root_path = "/home/jovyan/work/openfood_data"
+
     with open(config_file_path, 'r') as stream:
         config = yaml.safe_load(stream)
+    # get root path for local data
+    root_path = config['data_root_path']
+    if not os.path.exists(root_path):
+        os.mkdir(root_path)
+
+    # create s3 client
     s3_client = get_s3_boto_client(config['s3url'])
 
     # Step1: download data from

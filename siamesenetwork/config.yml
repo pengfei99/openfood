@@ -23,3 +23,4 @@ pretrainedModel_COICOP: 'model_2020-11-17_0_DOM.zip'
 pretrainedModel_NA2008: 'model_2020-12-14_0.zip'
 s3url: 'https://minio.lab.sspcloud.fr'
 vocab: 'siamese/vocab.txt'
+data_root_path: "/home/jovyan/work/openfood_data"
