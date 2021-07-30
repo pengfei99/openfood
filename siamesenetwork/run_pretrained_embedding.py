@@ -141,8 +141,6 @@ def main(argv):
     config_file = parse_config_file_path(argv)
     with open(config_file, 'r') as stream:
         config = yaml.safe_load(stream)
-    # build s3 client
-    s3_client = get_s3_boto_client(config['s3url'])
     # get local data root path
     root_path = config['data_root_path']
 
@@ -179,9 +177,10 @@ def main(argv):
     # load fasttext model
     ft_model_path = f"{root_path}/models_pretrained/coicop/model_compressed.ftz"
     ft = fasttext.load_model(ft_model_path)
-    # todo rewrite vocab
-    s3_client.download_file(config['bucket'], config['vocab'], 'vocab.txt')
-    voc_dic = vocabtoidx(vocab="vocab.txt")
+    # todo rewrite vocab and embedding
+    # get vocabulary
+    vocab_path = f"{root_path}/vocab.txt"
+    voc_dic = vocabtoidx(vocab=vocab_path)
 
     # CHARGEMENT DES EMBEDDINGS
     matrix_len = len(voc_dic) + 1
