@@ -18,8 +18,8 @@ def parse_input_argv(argv) -> (str, float, int):
     config_file = None
     learning_rate = None
     n_epochs = None
-    hint = "main.py -c <config_file_path> -l <learning_rate>, -n <n_epochs> \nIf -l, -n is missing, will " \
-           "use default value in config file"
+    hint = "run_pretrained_embedding.py -c <config_file_path> -l <learning_rate>, -n <n_epochs> \nIf -l, -n is " \
+           "missing, will use default value in config file"
     try:
         # hc: is the short option definitions. For example, you can test.py -c or test.py -h
         # for each option definition, it must be finished by :

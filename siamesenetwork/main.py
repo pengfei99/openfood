@@ -5,8 +5,10 @@ import zipfile
 
 import pandas as pd
 import yaml
+import getopt
+import sys
 
-from utils import *
+from utils import get_s3_boto_client, download_data_from_s3
 
 
 def split_data(seed: int, root_path: str):
@@ -55,9 +57,34 @@ def download_pretrained_model_from_s3(s3_client, config: dict, root_path: str):
         extractor.extractall(extracted_na2008_model_path)
 
 
+def input_parser(argv) -> str:
+    config_file = None
+    hint = "main.py -c <config_file>"
+    try:
+        # hc: is the short option definitions. For example, you can test.py -c or test.py -h
+        # [cfile,help] for long option definitions. For example, you can do test.py --cfile or test.py --help
+        opts, args = getopt.getopt(argv, "hc:", ["cfile=", "help="])
+    except getopt.GetoptError:
+        raise SystemExit(f"invalide arguments \nhint: {hint}")
+    for opt, arg in opts:
+        # option h for help
+        if opt in ('-h', "--help"):
+            print("hint")
+            sys.exit()
+        # option for config file
+        elif opt in ("-c", "--cfile"):
+            config_file = arg
+        else:
+            print("unknown option.\n " + hint)
+    if (not opts) or len(args) > 1:
+        raise SystemExit(f"invalide arguments \nhint: {hint}")
+    print(f'Config file path is {config_file}')
+    return config_file
+
+
 def main(argv):
     # setup config
-    config_file_path = parse_input_argv(argv)
+    config_file_path = input_parser(argv)
     seed = 5648783
 
     with open(config_file_path, 'r') as stream:
