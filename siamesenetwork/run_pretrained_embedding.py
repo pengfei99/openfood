@@ -214,7 +214,7 @@ def build_model(weights_matrix, dim, train_from_previous, previous_model_path=No
 def main(argv):
     print('\nThis is a script for training a siamese network using fastText embeddings with a Quadruplet Loss.\n')
     # Step1: Get param from config file
-    config_file = parse_config_file_path(argv)
+    config_file, in_lr, in_nepochs = parse_input_argv(argv)
     # hyper parameter to be logged for each run:
     # - batch_size
     # - n_epochs
@@ -224,7 +224,11 @@ def main(argv):
     # other param:
     # freeze_layers: layers don't need to be trained
     # root_path: local root path for downloaded data on each worker
-    root_path, batch_size, n_epochs, dim, lr, freeze_layers = get_params(config_file)
+    root_path, batch_size, c_n_epochs, dim, c_lr, freeze_layers = get_params(config_file)
+
+    # overload default learning rate and n_epochs of the conf file with user command input if exist
+    n_epochs = in_nepochs or c_n_epochs
+    lr = in_lr or c_lr
 
     device = select_hardware_for_training('gpu')
 
