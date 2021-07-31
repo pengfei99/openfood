@@ -57,7 +57,7 @@ def download_pretrained_model_from_s3(s3_client, config: dict, root_path: str):
 
 def main(argv):
     # setup config
-    config_file_path = parse_config_file_path(argv)
+    config_file_path = parse_input_argv(argv)
     seed = 5648783
 
     with open(config_file_path, 'r') as stream:
