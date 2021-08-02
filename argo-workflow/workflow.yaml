@@ -7,17 +7,17 @@ spec:
   arguments:
     parameters:
       - name: aws-secret-access-key
-        value: "CMz+h3I+u4dkt+bkrzkC5b64Kzb81QD75m8Twca5"
+        value: "changeMe"
       - name: aws-default-region
         value: "us-east-1"
       - name: aws-s3-endpoint
         value: "minio.lab.sspcloud.fr"
       - name: aws-session-token
-        value: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJHWlI0VTVGWFpBVkowWko2MkVMSiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJhdWQiOlsib255eGlhIiwiYWNjb3VudCJdLCJhdXRoX3RpbWUiOjE2Mjc4ODc1NTcsImF6cCI6Im9ueXhpYSIsImVtYWlsIjoibGl1LnBlbmdmZWlAaG90bWFpbC5mciIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJleHAiOiIxNjI3OTMwNzU3IiwiZmFtaWx5X25hbWUiOiJMaXUiLCJnaXZlbl9uYW1lIjoiUGVuZ2ZlaSIsImdyb3VwcyI6WyJwcm9qZXQtb255eGlhIiwicmVsZXZhbmMiLCJzcGFyay1sYWIiLCJzc3BjbG91ZC1hZG1pbiJdLCJpYXQiOjE2Mjc4ODc1NTgsImlzcyI6Imh0dHBzOi8vYXV0aC5sYWIuc3NwY2xvdWQuZnIvYXV0aC9yZWFsbXMvc3NwY2xvdWQiLCJqdGkiOiI5MTc3YzNlNC1hMmYzLTQxYjgtOGIxZi01Y2Q3ODZkN2ZmMTAiLCJsb2NhbGUiOiJmciIsIm5hbWUiOiJQZW5nZmVpIExpdSIsIm5vbmNlIjoiYzllMmRmMTYtMWNlMi00ZGNkLWJhY2ItNDhkNGY0ZTNjNTZjIiwicG9saWN5IjoiIiwicHJlZmVycmVkX3VzZXJuYW1lIjoicGVuZ2ZlaSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJBdGxhc19yb2xlX2FkbWluIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBncm91cHMgZW1haWwiLCJzZXNzaW9uX3N0YXRlIjoiZjg4NDViOWEtOWFjZC00YTY1LThlMjEtY2NjN2YxNzI4ZTcyIiwic3ViIjoiNDczNDkxMjgtNGE0Yy00MjI2LWE1YjEtNjgwODAxYWY1YTJiIiwidHlwIjoiQmVhcmVyIn0.GbnUV7K9YkVZbQeYf7j0sD-9C-akq8UCKQ5zwELeNlxvNM4B8E4_jwoves3_uzvX44Yv2u1De9XeYLFkcUMyzg"
+        value: "changeMe"
       - name: aws-access-key
-        value: "GZR4U5FXZAVJ0ZJ62ELJ"
+        value: "changeMe"
       - name: mlflow-tracking-uri
-        value: 'https://pengfei-mlflow-6923080064718463498-mlflow-ihm.kub.sspcloud.fr'
+        value: 'changeMe'
       - name: mlflow-experiment-name
         value: "openfood"
       - name: mlflow-s3-url
@@ -25,8 +25,8 @@ spec:
       - name: model-training-conf-list
         value: |
           [
-            { "lr": 3e-4, "nepochs": 10 },
-            { "lr": 5e-4, "nepochs": 15 }
+            { "lr": 3e-4, "nepochs": 1 },
+            { "lr": 5e-4, "nepochs": 2 }
           ]
   # Create a pvc for the workflow
   volumeClaimTemplates:
