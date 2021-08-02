@@ -48,8 +48,8 @@ spec:
           # task 0: load code source and data
           - name: load-code-and-data
             template: load-code-and-data-wt
-          # task 1: check duplicated rows
-          - name: check-duplicated-rows
+          # task 1: train model with given params
+          - name: train-model-with-given-params
             dependencies: [ load-code-and-data ]
             template: run-model-training-wt
             arguments:
@@ -59,7 +59,7 @@ spec:
                 - name: nepochs
                   value: "{{item.nepochs}}"
               # pass the inputs to the step "withParam"
-              withParam: "{{workflow.parameters.model-training-conf-list}}"
+            withParam: "{{workflow.parameters.model-training-conf-list}}"
     ####################################################################################################################
     #################### task template for implementing the logic of each task of the pipeline #########################
     ####################################################################################################################
@@ -102,9 +102,9 @@ spec:
           - name: lr
           - name: nepochs
       container:
-        image: busybox
+        image: liupengfei99/openfood-cpu-worker:latest
         command: [sh, -c]
-        args: ["echo {{inputs.parameters.lr}} {{inputs.parameters.nepochs}};python /mnt/bin/siamesenetwork/run_pretrained_embedding_with_mlflow.py
+        args: ["echo {{inputs.parameters.lr}} {{inputs.parameters.nepochs}}; python /mnt/bin/siamesenetwork/run_pretrained_embedding_with_mlflow.py
                 -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
         env:
           - name: AWS_SECRET_ACCESS_KEY
