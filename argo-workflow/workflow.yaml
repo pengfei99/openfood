@@ -67,7 +67,7 @@ spec:
       container:
         image: liupengfei99/openfood-cpu-worker:latest
         command: [ sh, -c ]
-        args: [ "mkdir -p /mnt/openfood_data; python /mnt/bin/siamesenetwork/main.py -c /mnt/bin/siamesenetwork/config.yml ls -l /mnt/bin /mnt/openfood_data; env | grep -i 'aws'" ]
+        args: [ "mkdir -p /mnt/openfood_data; python /mnt/bin/siamesenetwork/main.py -c /mnt/bin/siamesenetwork/config.yml; ls -l /mnt/bin /mnt/openfood_data; env | grep -i 'aws'" ]
         env:
           - name: AWS_SECRET_ACCESS_KEY
             value: "{{workflow.parameters.aws-secret-access-key}}"
