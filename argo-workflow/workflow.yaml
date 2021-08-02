@@ -59,7 +59,7 @@ spec:
       container:
         image: liupengfei99/openfood-cpu-worker:latest
         command: [sh, -c]
-        args: ["mkdir -p /mnt/input; ls -l /mnt/bin /mnt/input; echo $AWS_SECRET_ACCESS_KEY"]
+        args: ["mkdir -p /mnt/input; ls -l /mnt/bin /mnt/input; env | grep -i 'aws'"]
         env:
           - name: AWS_SECRET_ACCESS_KEY
             value: "{{workflow.parameters.aws-secret-access-key}}"
