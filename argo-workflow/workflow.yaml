@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: openfood-workflow-v1-
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: aws-secret-access-key
+        value: "L3dxYftqlqW5rHZTOXXLeccpjyqttC3IVi44Qk05"
+      - name: model-training-conf-list
+        value: |
+              [
+                { "lr": 3e-4, "nepochs": 10 },
+                { "lr": 5e-4, "nepochs": 15 }
+              ]
+  # Create a pvc for the workflow
+  volumeClaimTemplates:
+    - metadata:
+        name: workflow-tmp
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+
+  templates:
+    #############################################################################################
+    #################### main template for planning dag of the pipeline #########################
+    #############################################################################################
+    - name: main
+      dag:
+        tasks:
+          # task 0: load code source and data
+          - name: load-code-and-data
+            template: load-code-and-data-wt
+#          # task 2: check duplicated rows
+#          - name: check-duplicated-rows
+#            dependencies: [ load-code-and-data ]
+#            template: check-duplicated-rows-wt
+#          # task 2: check missing values
+#          - name: check-missing-value
+#            dependencies: [ load-code-and-data ]
+#            template: check-missing-value-wt
+  ####################################################################################################################
+  #################### task template for implementing the logic of each task of the pipeline #########################
+  ####################################################################################################################
+    # worker template for task-0 load code
+    - name: load-code-and-data-wt
+      inputs:
+        artifacts:
+          # Check out the master branch of the argo repo and place it at /src
+          # revision can be anything that git checkout accepts: branch, commit, tag, etc.
+          - name: code
+            path: /mnt/bin
+            git:
+              repo: https://github.com/pengfei99/openfood.git
+              revision: "main"
+      container:
+        image: liupengfei99/openfood-cpu-worker:latest
+        command: [sh, -c]
+        args: ["mkdir -p /mnt/input; ls -l /mnt/bin /mnt/input; echo $AWS_SECRET_ACCESS_KEY"]
+        env:
+          - name: AWS_SECRET_ACCESS_KEY
+            value: "{{workflow.parameters.aws-secret-access-key}}"
+        volumeMounts:
+          - name: workflow-tmp
+            mountPath: /mnt

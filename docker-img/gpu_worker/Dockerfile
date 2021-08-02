@@ -1,6 +1,7 @@
-FROM inseefrlab/tenorflow:2.4.0-gpu-jupyter
+FROM inseefrlab/tensorflow:2.4.0-gpu-jupyter
 
-RUN pip install pandas && \
+RUN pip install --upgrade pip && \
+    pip install pandas && \
     pip install tqdm && \
     pip install torch && \
     pip install fasttext && \
