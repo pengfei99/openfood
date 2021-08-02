@@ -7,7 +7,7 @@ spec:
   arguments:
     parameters:
       - name: aws-secret-access-key
-        value: "changeMe"
+        value: "CMz+h3I+u4dkt+bkrzkC5b64Kzb81QD75m8Twca5"
       - name: aws-default-region
         value: "us-east-1"
       - name: aws-s3-endpoint
