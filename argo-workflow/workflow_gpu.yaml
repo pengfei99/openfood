@@ -6,6 +6,8 @@ spec:
   entrypoint: main
   arguments:
     parameters:
+      - name: device
+        value: "gpu"
       - name: aws-secret-access-key
         value: "changeMe"
       - name: aws-default-region
@@ -48,8 +50,8 @@ spec:
           # task 0: load code source and data
           - name: load-code-and-data
             template: load-code-and-data-wt
-          # task 1: train model with given params
-          - name: train-model-with-given-params
+          # task 1: train model with cpu worker
+          - name: train-model-with-cpu-worker
             dependencies: [ load-code-and-data ]
             template: run-model-training-wt
             arguments:
@@ -60,6 +62,22 @@ spec:
                   value: "{{item.nepochs}}"
               # pass the inputs to the step "withParam"
             withParam: "{{workflow.parameters.model-training-conf-list}}"
+            when: "{{workflow.parameters.device}} == cpu"
+          # task 2: train model with gpu
+          - name: train-model-with-gpu-worker
+            dependencies: [ load-code-and-data ]
+            template: gpu-model-training-wt
+            arguments:
+              parameters:
+                - name: lr
+                  value: "{{item.lr}}"
+                - name: nepochs
+                  value: "{{item.nepochs}}"
+              # pass the inputs to the step "withParam"
+            withParam: "{{workflow.parameters.model-training-conf-list}}"
+            when: "{{workflow.parameters.device}} == gpu"
+
+
     ####################################################################################################################
     #################### task template for implementing the logic of each task of the pipeline #########################
     ####################################################################################################################
@@ -95,14 +113,46 @@ spec:
           - name: workflow-tmp
             mountPath: /mnt
 
-    # worker template for task-1 train model
-    - name: run-model-training-wt
+    # worker template for task-1 train model with cpu
+    - name: cpu-model-training-wt
       inputs:
         parameters:
           - name: lr
           - name: nepochs
       container:
         image: liupengfei99/openfood-cpu-worker:latest
+        command: [sh, -c]
+        args: ["python /mnt/bin/siamesenetwork/run_pretrained_embedding_with_mlflow.py
+                -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
+        env:
+          - name: AWS_SECRET_ACCESS_KEY
+            value: "{{workflow.parameters.aws-secret-access-key}}"
+          - name: AWS_DEFAULT_REGION
+            value: "{{workflow.parameters.aws-default-region}}"
+          - name: AWS_S3_ENDPOINT
+            value: "{{workflow.parameters.aws-s3-endpoint}}"
+          - name: AWS_SESSION_TOKEN
+            value: "{{workflow.parameters.aws-session-token}}"
+          - name: AWS_ACCESS_KEY_ID
+            value: "{{workflow.parameters.aws-access-key}}"
+          - name: MLFLOW_TRACKING_URI
+            value: "{{workflow.parameters.mlflow-tracking-uri}}"
+          - name: MLFLOW_EXPERIMENT_NAME
+            value: "{{workflow.parameters.mlflow-experiment-name}}"
+          - name: MLFLOW_S3_ENDPOINT_URL
+            value: "{{workflow.parameters.mlflow-s3-url}}"
+        volumeMounts:
+          - name: workflow-tmp
+            mountPath: /mnt
+
+    # worker template for task-2 train model with gpu
+    - name: gpu-model-training-wt
+      inputs:
+        parameters:
+          - name: lr
+          - name: nepochs
+      container:
+        image: liupengfei99/openfood-gpu-worker:latest
         command: [sh, -c]
         args: ["python /mnt/bin/siamesenetwork/run_pretrained_embedding_with_mlflow.py
                 -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
