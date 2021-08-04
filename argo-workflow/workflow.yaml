@@ -7,17 +7,17 @@ spec:
   arguments:
     parameters:
       - name: aws-secret-access-key
-        value: "changeMe"
+        value: "DTVQu6WaF+A5ScGTHXkTcTDVKI3OHDjkMRNawZDs"
       - name: aws-default-region
         value: "us-east-1"
       - name: aws-s3-endpoint
         value: "minio.lab.sspcloud.fr"
       - name: aws-session-token
-        value: "changeMe"
+        value: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiIzUTVMWFdETzI4V1EzVjlQNElZUCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJhdWQiOlsib255eGlhIiwibWluaW8tdGVzdCIsImFjY291bnQiXSwiYXV0aF90aW1lIjoxNjI4MDYyMDg2LCJhenAiOiJvbnl4aWEiLCJlbWFpbCI6ImxpdS5wZW5nZmVpQGhvdG1haWwuZnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoiMTYyODEwNTI4NyIsImZhbWlseV9uYW1lIjoiTGl1IiwiZ2l2ZW5fbmFtZSI6IlBlbmdmZWkiLCJncm91cHMiOlsicHJvamV0LW9ueXhpYSIsInJlbGV2YW5jIiwic3BhcmstbGFiIiwic3NwY2xvdWQtYWRtaW4iXSwiaWF0IjoxNjI4MDYyMDg3LCJpc3MiOiJodHRwczovL2F1dGgubGFiLnNzcGNsb3VkLmZyL2F1dGgvcmVhbG1zL3NzcGNsb3VkIiwianRpIjoiMGZmYjc2YzEtYjBlMi00MjcwLThmZTItOGYwMGVkMjQ0ODMyIiwibG9jYWxlIjoiZnIiLCJuYW1lIjoiUGVuZ2ZlaSBMaXUiLCJub25jZSI6IjFhYjdiYWRlLWI0MzgtNDM4YS05OTVhLWEwZjJhYmU5M2RlZSIsInBvbGljeSI6IiIsInByZWZlcnJlZF91c2VybmFtZSI6InBlbmdmZWkiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiQXRsYXNfcm9sZV9hZG1pbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZ3JvdXBzIGVtYWlsIiwic2Vzc2lvbl9zdGF0ZSI6IjVkYTM1MzNkLTRjMGUtNDg0MC04YTEwLWMzM2Q5ZThlY2FhMyIsInN1YiI6IjQ3MzQ5MTI4LTRhNGMtNDIyNi1hNWIxLTY4MDgwMWFmNWEyYiIsInR5cCI6IkJlYXJlciJ9.mH5RNfwkKIL-vQfJ0B2gO6QnWIFB_0tIXIxGa_grTS6q6On4gvzgcsYi2bDHgRgvyePwqSptNYRYJ7aqc-ZgYQ"
       - name: aws-access-key
-        value: "changeMe"
+        value: "3Q5LXWDO28WQ3V9P4IYP"
       - name: mlflow-tracking-uri
-        value: 'changeMe'
+        value: 'https://pengfei-mlflow-7841853311341079041-mlflow-ihm.kub.sspcloud.fr/'
       - name: mlflow-experiment-name
         value: "openfood"
       - name: mlflow-s3-url
@@ -25,8 +25,10 @@ spec:
       - name: model-training-conf-list
         value: |
           [
+            { "lr": 2e-4, "nepochs": 1 },
             { "lr": 3e-4, "nepochs": 1 },
-            { "lr": 5e-4, "nepochs": 2 }
+            { "lr": 4e-4, "nepochs": 1 },
+            { "lr": 5e-4, "nepochs": 1 }
           ]
   # Create a pvc for the workflow
   volumeClaimTemplates:
