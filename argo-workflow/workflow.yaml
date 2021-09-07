@@ -6,16 +6,19 @@ spec:
   entrypoint: main
   arguments:
     parameters:
-      - name: aws-secret-access-key
+      - name: aws-access-id
+        value: "changeMe"
+      - name: aws-secret-key
+        value: "changeMe"
+      - name: aws-session-token
         value: "changeMe"
       - name: aws-default-region
         value: "us-east-1"
       - name: aws-s3-endpoint
         value: "minio.lab.sspcloud.fr"
-      - name: aws-session-token
-        value: "changeMe"
-      - name: aws-access-key
-        value: "changeMe"
+       # The mlflow tracking server is responsable to log the hyper-parameter and model metrics,
+       # You can create it inside the datalab, and copy the url. Below is an example
+       # https://pengfei-mlflow-7841853311341079041-mlflow-ihm.kub.sspcloud.fr/
       - name: mlflow-tracking-uri
         value: 'changeMe'
       - name: mlflow-experiment-name
@@ -25,8 +28,10 @@ spec:
       - name: model-training-conf-list
         value: |
           [
+            { "lr": 2e-4, "nepochs": 1 },
             { "lr": 3e-4, "nepochs": 1 },
-            { "lr": 5e-4, "nepochs": 2 }
+            { "lr": 4e-4, "nepochs": 1 },
+            { "lr": 5e-4, "nepochs": 1 }
           ]
   # Create a pvc for the workflow
   volumeClaimTemplates:
@@ -82,7 +87,7 @@ spec:
                  ls -l /mnt/bin /mnt/openfood_data" ]
         env:
           - name: AWS_SECRET_ACCESS_KEY
-            value: "{{workflow.parameters.aws-secret-access-key}}"
+            value: "{{workflow.parameters.aws-secret-key}}"
           - name: AWS_DEFAULT_REGION
             value: "{{workflow.parameters.aws-default-region}}"
           - name: AWS_S3_ENDPOINT
@@ -90,7 +95,7 @@ spec:
           - name: AWS_SESSION_TOKEN
             value: "{{workflow.parameters.aws-session-token}}"
           - name: AWS_ACCESS_KEY_ID
-            value: "{{workflow.parameters.aws-access-key}}"
+            value: "{{workflow.parameters.aws-access-id}}"
         volumeMounts:
           - name: workflow-tmp
             mountPath: /mnt
@@ -108,7 +113,7 @@ spec:
                 -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
         env:
           - name: AWS_SECRET_ACCESS_KEY
-            value: "{{workflow.parameters.aws-secret-access-key}}"
+            value: "{{workflow.parameters.aws-secret-key}}"
           - name: AWS_DEFAULT_REGION
             value: "{{workflow.parameters.aws-default-region}}"
           - name: AWS_S3_ENDPOINT
@@ -116,7 +121,7 @@ spec:
           - name: AWS_SESSION_TOKEN
             value: "{{workflow.parameters.aws-session-token}}"
           - name: AWS_ACCESS_KEY_ID
-            value: "{{workflow.parameters.aws-access-key}}"
+            value: "{{workflow.parameters.aws-access-id}}"
           - name: MLFLOW_TRACKING_URI
             value: "{{workflow.parameters.mlflow-tracking-uri}}"
           - name: MLFLOW_EXPERIMENT_NAME
