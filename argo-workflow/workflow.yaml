@@ -6,18 +6,21 @@ spec:
   entrypoint: main
   arguments:
     parameters:
-      - name: aws-secret-access-key
-        value: "DTVQu6WaF+A5ScGTHXkTcTDVKI3OHDjkMRNawZDs"
+      - name: aws-access-id
+        value: "changeMe"
+      - name: aws-secret-key
+        value: "changeMe"
+      - name: aws-session-token
+        value: "changeMe"
       - name: aws-default-region
         value: "us-east-1"
       - name: aws-s3-endpoint
         value: "minio.lab.sspcloud.fr"
-      - name: aws-session-token
-        value: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiIzUTVMWFdETzI4V1EzVjlQNElZUCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJhdWQiOlsib255eGlhIiwibWluaW8tdGVzdCIsImFjY291bnQiXSwiYXV0aF90aW1lIjoxNjI4MDYyMDg2LCJhenAiOiJvbnl4aWEiLCJlbWFpbCI6ImxpdS5wZW5nZmVpQGhvdG1haWwuZnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoiMTYyODEwNTI4NyIsImZhbWlseV9uYW1lIjoiTGl1IiwiZ2l2ZW5fbmFtZSI6IlBlbmdmZWkiLCJncm91cHMiOlsicHJvamV0LW9ueXhpYSIsInJlbGV2YW5jIiwic3BhcmstbGFiIiwic3NwY2xvdWQtYWRtaW4iXSwiaWF0IjoxNjI4MDYyMDg3LCJpc3MiOiJodHRwczovL2F1dGgubGFiLnNzcGNsb3VkLmZyL2F1dGgvcmVhbG1zL3NzcGNsb3VkIiwianRpIjoiMGZmYjc2YzEtYjBlMi00MjcwLThmZTItOGYwMGVkMjQ0ODMyIiwibG9jYWxlIjoiZnIiLCJuYW1lIjoiUGVuZ2ZlaSBMaXUiLCJub25jZSI6IjFhYjdiYWRlLWI0MzgtNDM4YS05OTVhLWEwZjJhYmU5M2RlZSIsInBvbGljeSI6IiIsInByZWZlcnJlZF91c2VybmFtZSI6InBlbmdmZWkiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiQXRsYXNfcm9sZV9hZG1pbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZ3JvdXBzIGVtYWlsIiwic2Vzc2lvbl9zdGF0ZSI6IjVkYTM1MzNkLTRjMGUtNDg0MC04YTEwLWMzM2Q5ZThlY2FhMyIsInN1YiI6IjQ3MzQ5MTI4LTRhNGMtNDIyNi1hNWIxLTY4MDgwMWFmNWEyYiIsInR5cCI6IkJlYXJlciJ9.mH5RNfwkKIL-vQfJ0B2gO6QnWIFB_0tIXIxGa_grTS6q6On4gvzgcsYi2bDHgRgvyePwqSptNYRYJ7aqc-ZgYQ"
-      - name: aws-access-key
-        value: "3Q5LXWDO28WQ3V9P4IYP"
+       # The mlflow tracking server is responsable to log the hyper-parameter and model metrics,
+       # You can create it inside the datalab, and copy the url. Below is an example
+       # https://pengfei-mlflow-7841853311341079041-mlflow-ihm.kub.sspcloud.fr/
       - name: mlflow-tracking-uri
-        value: 'https://pengfei-mlflow-7841853311341079041-mlflow-ihm.kub.sspcloud.fr/'
+        value: 'changeMe'
       - name: mlflow-experiment-name
         value: "openfood"
       - name: mlflow-s3-url
@@ -84,7 +87,7 @@ spec:
                  ls -l /mnt/bin /mnt/openfood_data" ]
         env:
           - name: AWS_SECRET_ACCESS_KEY
-            value: "{{workflow.parameters.aws-secret-access-key}}"
+            value: "{{workflow.parameters.aws-secret-key}}"
           - name: AWS_DEFAULT_REGION
             value: "{{workflow.parameters.aws-default-region}}"
           - name: AWS_S3_ENDPOINT
@@ -92,7 +95,7 @@ spec:
           - name: AWS_SESSION_TOKEN
             value: "{{workflow.parameters.aws-session-token}}"
           - name: AWS_ACCESS_KEY_ID
-            value: "{{workflow.parameters.aws-access-key}}"
+            value: "{{workflow.parameters.aws-access-id}}"
         volumeMounts:
           - name: workflow-tmp
             mountPath: /mnt
@@ -110,7 +113,7 @@ spec:
                 -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
         env:
           - name: AWS_SECRET_ACCESS_KEY
-            value: "{{workflow.parameters.aws-secret-access-key}}"
+            value: "{{workflow.parameters.aws-secret-key}}"
           - name: AWS_DEFAULT_REGION
             value: "{{workflow.parameters.aws-default-region}}"
           - name: AWS_S3_ENDPOINT
@@ -118,7 +121,7 @@ spec:
           - name: AWS_SESSION_TOKEN
             value: "{{workflow.parameters.aws-session-token}}"
           - name: AWS_ACCESS_KEY_ID
-            value: "{{workflow.parameters.aws-access-key}}"
+            value: "{{workflow.parameters.aws-access-id}}"
           - name: MLFLOW_TRACKING_URI
             value: "{{workflow.parameters.mlflow-tracking-uri}}"
           - name: MLFLOW_EXPERIMENT_NAME
