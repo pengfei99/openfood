@@ -29,8 +29,11 @@ def get_vocab(vocab_path: str):
 
 
 def load_model_by_version(model_name: str, version: str):
-    model = mlflow.pytorch.load_model(model_uri=f"models:/{model_name}/{version}")
-    return model
+    return mlflow.pytorch.load_model(model_uri=f"models:/{model_name}/{version}")
+
+
+def load_model_by_stage(model_name: str, stage: str):
+    return mlflow.pytorch.load_model(model_uri=f"models:/{model_name}/{stage}")
 
 
 def predict(model, libel_tensor, libel_off_tensor, df):
@@ -61,10 +64,13 @@ def main():
     # step2: download model from model repo
     model_name = "openfood"
     version = "2"
-    model = load_model_by_version(model_name, version)
+    stage = "Production"
+    model1 = load_model_by_version(model_name, version)
+    model2 = load_model_by_stage(model_name, stage="Production")
 
-    # step3: predict on
-    predict(model, libel_tensor, libel_off_tensor, df)
+    # step3: predict on test data
+    predict(model1, libel_tensor, libel_off_tensor, df)
+    predict(model2, libel_tensor, libel_off_tensor, df)
 
 
 if __name__ == "__main__":
