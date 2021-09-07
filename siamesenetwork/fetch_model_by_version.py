@@ -5,7 +5,7 @@ import mlflow
 import pandas as pd
 import torch
 
-from siamesenetwork.siameseUtils import lib2vocab, vocabtoidx, libel2vec, computeModelTopk
+from siamesenetwork.siameseUtils import lib2vocab, libel2vec, vocabtoidx, computeModelTopk
 
 logging.basicConfig(level=logging.WARN)
 logger = logging.getLogger(__name__)
@@ -19,6 +19,8 @@ def prepare_data(df, voc_dic):
     list_libel_off = lib2vocab(df['libel_clean_OFF'].to_list(), voc_dic)
     list_libel_tensor = [torch.tensor([item]) for item in list_libel]
     list_libel_off_tensor = [torch.tensor([item]) for item in list_libel_off]
+    print(list_libel_tensor)
+    print(list_libel_off_tensor)
     return list_libel_tensor, list_libel_off_tensor
 
 
@@ -27,7 +29,7 @@ def get_vocab(vocab_path: str):
 
 
 def load_model_by_version(model_name: str, version: str):
-    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{version}")
+    model = mlflow.pytorch.load_model(model_uri=f"models:/{model_name}/{version}")
     return model
 
 
@@ -50,8 +52,8 @@ def main():
     os.environ["MLFLOW_TRACKING_URI"] = remote_server_uri
 
     # step1: prepare data
-    vocab_path = "../data/vocab.txt"
-    test_data_path = "../data/test.csv"
+    vocab_path = "./data/vocab.txt"
+    test_data_path = "./data/test.csv"
     vocab = get_vocab(vocab_path)
     df = pd.read_csv(test_data_path)
     libel_tensor, libel_off_tensor = prepare_data(df, vocab)
