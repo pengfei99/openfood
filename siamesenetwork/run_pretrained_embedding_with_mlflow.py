@@ -242,8 +242,13 @@ def main(argv):
     weights_matrix = build_word_embedding_layer(ft_model_path, voc_dic)
 
     # step3 : transfer data
-    train_data_path = f"{root_path}/train.csv"
-    dev_data_path = f"{root_path}/dev.csv"
+    # for pipeline test purpose
+    train_data_path = f"{root_path}/dev.csv"
+    dev_data_path = f"{root_path}/test.csv"
+    # for prod
+    # train_data_path = f"{root_path}/train.csv"
+    # dev_data_path = f"{root_path}/dev.csv"
+
     train_data_loader, dev_data_loader = build_train_dev_data_loader(train_data_path, dev_data_path, voc_dic, device,
                                                                      batch_size)
 
