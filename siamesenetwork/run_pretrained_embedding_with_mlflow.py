@@ -262,17 +262,19 @@ def main(argv):
     previous_model_path = f"{root_path}/models_results/20210616_152847/model.weights"
     siamese_model = build_model(weights_matrix, dim, train_from_previous, previous_model_path=previous_model_path)
 
-    # output_path
-    output_dir = "{}/models_results/{:%Y%m%d_%H%M%S}/".format(root_path, datetime.now())
-    output_path = output_dir + "model.weights"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
     # set up mlflow
     experiment_name = "openfood"
     mlflow.set_experiment(experiment_name)
     with mlflow.start_run() as run:
-        print("run_id:", run.info.run_id)
+        run_id = run.info.run_id
+        print("run_id:", run_id)
+        # create output dir, if two job starts at same time, the two jobs will create the same folder
+        # You will receive FileExistsError: [Errno 17] File exists: '/mnt/openfood_data/models_results/20210908_082452/'
+        # solution, add run_id after timestamp
+        output_dir = "{}/models_results/{:%Y%m%d_%H%M%S}_{}/".format(root_path, datetime.now(), run_id)
+        output_path = output_dir + "model.weights"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         mlflow.set_tag("mlflow_version", mlflow.__version__)
         mlflow.set_tag("torch_version", torch.__version__)
         mlflow.set_tag("autolog", auto_log)
