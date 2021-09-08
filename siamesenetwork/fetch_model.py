@@ -45,8 +45,12 @@ def predict(model, libel_tensor, libel_off_tensor, df):
                                           target_labels=df['libel_clean'].to_list(),
                                           labels=df['libel_clean_OFF'].to_list(),
                                           K=k)
+    best_accuracy = 0
     for i, item in enumerate(accuracy):
+        if best_accuracy < item:
+            best_accuracy = item
         print('Average Test Accuracy for top-{} : {:.2f}\n'.format(i + 1, item))
+    print('Best Accuracy is : {:.2f}\n'.format(best_accuracy))
 
 
 def main():

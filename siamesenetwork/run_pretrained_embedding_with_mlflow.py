@@ -15,9 +15,9 @@ from datetime import datetime
 
 import fasttext.util
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import pandas as pd
-import torch
 import yaml
 from torch import optim
 from torch.utils.data import DataLoader
@@ -25,9 +25,8 @@ from tqdm import tqdm
 
 from siamesePreTrainedEmbeddings import SiamesePreTrainedQuadruplet
 from siameseUtils import AverageMeter, QuadrupletLoss, libel2vec, computeModelTopk, lib2vocab, \
-    CreateTorchQuadrupletDataset, vocabtoidx, multipleNWayOneShotTask
+    CreateTorchQuadrupletDataset, vocabtoidx
 from utils import *
-import mlflow
 
 
 # -----------------
@@ -323,19 +322,20 @@ def main(argv):
         print("COMPUTING MODEL'S TOP-K ACCURACY")
         print(80 * "=")
         # k is the number of test
-        k = 10
+        k = 100
         accuracy, outliers = computeModelTopk(target_vectors=vec_libel,
                                               vectors=vec_OFF,
                                               target_labels=df['libel_clean'].to_list(),
                                               labels=df['libel_clean_OFF'].to_list(),
                                               K=k)
-        final_accuracy = None
-        with open(output_dir + 'performance.txt', 'a') as f:
-            for i, item in enumerate(accuracy):
-                f.write('Average Test Accuracy for top-{} : {:.2f}\n'.format(i + 1, item))
-                final_accuracy = item
+        best_accuracy = 0
+        for i, item in enumerate(accuracy):
+            if best_accuracy < item:
+                best_accuracy = item
+            print('Average Test Accuracy for top-{} : {:.2f}\n'.format(i + 1, item))
+        print('Best Accuracy is : {:.2f}\n'.format(best_accuracy))
 
-        mlflow.log_metric("accuracy", final_accuracy)
+        mlflow.log_metric("accuracy", best_accuracy)
 
     # correction = False
     # if correction:
