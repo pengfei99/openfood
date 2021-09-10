@@ -150,7 +150,8 @@ def get_params(config_file_path: str):
         print('Does not train pre-trained layers.')
     print(f'Batch size : {batch_size}')
     print(f'Learning rate : {lr} \n')
-    return root_path, batch_size, n_epochs, dim, lr, freeze_layers, auto_log
+    data_source_s3_path = f"{config['bucket']}/{config['dataKey']}"
+    return root_path, batch_size, n_epochs, dim, lr, freeze_layers, auto_log, data_source_s3_path
 
 
 def build_word_embedding_layer(ft_model_path: str, voc_dic: dict):
@@ -224,7 +225,7 @@ def main(argv):
     # other param:
     # freeze_layers: layers don't need to be trained
     # root_path: local root path for downloaded data on each worker
-    root_path, batch_size, c_n_epochs, dim, c_lr, freeze_layers, auto_log = get_params(config_file)
+    root_path, batch_size, c_n_epochs, dim, c_lr, freeze_layers, auto_log, s3_data_source_path = get_params(config_file)
 
     # overload default learning rate and n_epochs of the conf file with user command input if exist
     n_epochs = in_nepochs or c_n_epochs
@@ -285,6 +286,7 @@ def main(argv):
             mlflow.log_param("n_epochs", n_epochs)
             mlflow.log_param("dimension", dim)
             mlflow.log_param("learning_rate", lr)
+            mlflow.log_param("data_source", s3_data_source_path)
 
         # step5: train the model
         train_loss_history, dev_loss_history = train(model=siamese_model,
