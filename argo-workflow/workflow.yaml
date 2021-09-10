@@ -111,6 +111,13 @@ spec:
         command: [sh, -c]
         args: ["python /mnt/bin/siamesenetwork/run_pretrained_embedding_with_mlflow.py
                 -c /mnt/bin/siamesenetwork/config.yml -n {{inputs.parameters.nepochs}} -l {{inputs.parameters.lr}}"]
+        resources:
+          requests:
+            memory: "4096Mi"
+            cpu: "4000m"
+          limits:
+            memory: "8192Mi"
+            cpu: "5000m"
         env:
           - name: AWS_SECRET_ACCESS_KEY
             value: "{{workflow.parameters.aws-secret-key}}"
