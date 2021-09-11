@@ -49,15 +49,11 @@ def predict(model, libel_tensor, libel_off_tensor, df):
     for i, item in enumerate(accuracy):
         if best_accuracy < item:
             best_accuracy = item
-        print('Average Test Accuracy for top-{} : {:.2f}\n'.format(i + 1, item))
+        # print('Average Test Accuracy for top-{} : {:.2f}'.format(i + 1, item))
     print('Best Accuracy is : {:.2f}\n'.format(best_accuracy))
 
 
 def main():
-    # set up the ml server url and experiment name
-    remote_server_uri = "https://pengfei-mlflow-4631160170256180972-mlflow-ihm.kub.sspcloud.fr"
-    os.environ["MLFLOW_TRACKING_URI"] = remote_server_uri
-
     # step1: prepare data
     vocab_path = "./data/vocab.txt"
     test_data_path = "./data/test.csv"
@@ -65,15 +61,15 @@ def main():
     df = pd.read_csv(test_data_path)
     libel_tensor, libel_off_tensor = prepare_data(df, vocab)
 
-    # step2: download model from model repo
+    # step2: download model from model registry
     model_name = "openfood"
     version = "2"
     stage = "Production"
-    model1 = load_model_by_version(model_name, version)
-    model2 = load_model_by_stage(model_name, stage="Production")
+    # model1 = load_model_by_version(model_name, version)
+    model2 = load_model_by_stage(model_name, stage=stage)
 
     # step3: predict on test data
-    predict(model1, libel_tensor, libel_off_tensor, df)
+    # predict(model1, libel_tensor, libel_off_tensor, df)
     predict(model2, libel_tensor, libel_off_tensor, df)
 
 
